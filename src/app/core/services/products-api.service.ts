@@ -1,39 +1,22 @@
-import { Injectable } from '@angular/core';
-import { Headers, Http, Response } from '@angular/http';
+import { Injectable, Inject } from '@angular/core';
+import { Headers, RequestOptions } from '@angular/http';
+import { Observable } from 'rxjs/Rx';
 
-import 'rxjs/add/operator/map'
+import { AccessTokenService } from './access-token.service';
+import { GenericHttpService } from './generic-http.service';
+import { APP_CONFIG, IAppConfig } from '../config';
 
 @Injectable()
 export class ProductsApiService {
-  constructor(private http: Http) {
-    getAccessToken().then(function(data: any) {
-      http.get('https://api.molt.in/v1/products', {
-        headers : new Headers({
-          "Authorization" : "Bearer " + JSON.parse(data).access_token
-        })
-      })
-        .map((res: Response) => res.json())
-        .subscribe((data) => console.log(data));
-    });
+  constructor(@Inject(APP_CONFIG) private config: IAppConfig,
+      private accessTokenService: AccessTokenService,
+      private genericHttpService: GenericHttpService) { }
+
+  getAllProducts(): Observable<any> {
+    const token = this.accessTokenService.getToken();
+    const headers = new Headers({ 'Authorization': `Bearer ${token}` });
+    const options = new RequestOptions({ headers });
+
+    return this.genericHttpService.get(this.config.productsEndpoint, options);
   }
-}
-
-function getAccessToken(){
-    var creds = "client_id=" + 'hRNbvZF2gqmgBZE05MZKpLZ6eUXJG9pnvBQ5zQIo7C' +  "&grant_type=implicit";
-    return new Promise(function(resolve, reject) {
-        var request = new XMLHttpRequest();
-        request.open('POST', 'https://api.molt.in/oauth/access_token?');
-
-        request.onload = function() {
-            if (request.status == 200) {
-                resolve(request.response);
-            } else {
-                reject(Error(request.statusText));
-            }
-        };
-        request.onerror = function() {
-            reject(Error('Error fetching data.'));
-        };
-        request.send(creds); //send the request
-    });
 }

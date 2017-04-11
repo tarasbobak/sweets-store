@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
+import { ProductsApiService } from '../core/services';
+
 @Component({
   selector: 'ss-home',
   templateUrl: './home.component.html',
@@ -7,9 +9,12 @@ import { Component, OnInit } from '@angular/core';
 })
 export class HomeComponent implements OnInit {
 
-  constructor() { }
+  constructor(private productsApiService: ProductsApiService) { }
 
   ngOnInit() {
+    this.productsApiService.getAllProducts().subscribe(function(products) {
+      console.log(products);
+    });
   }
 
 }
